@@ -21,26 +21,26 @@ const getAllUsers = async (req, res) => {
 // @route POST /users
 // @access Private
 const createNewUser = async (req, res) => {
-    const { username, password, roles } = req.body
+    const { username, email, password, roles } = req.body
 
     // Confirm data
-    if (!username || !password) {
+    if (!username || !email || !password) {
         return res.status(400).json({ message: 'All fields are required' })
     }
 
     // Check for duplicate username
-    const duplicate = await User.findOne({ username }).collation({ locale: 'en', strength: 2 }).lean().exec()
+    const duplicate = await User.findOne({ username, email }).collation({ locale: 'fr', strength: 2 }).lean().exec()
 
     if (duplicate) {
-        return res.status(409).json({ message: 'Duplicate username' })
+        return res.status(409).json({ message: 'Duplicate username or email' })
     }
 
     // Hash password
     const hashedPwd = await bcrypt.hash(password, 10) // salt rounds
 
     const userObject = (!Array.isArray(roles) || !roles.length)
-        ? { username, "password": hashedPwd }
-        : { username, "password": hashedPwd, roles }
+        ? { username, email, "password": hashedPwd }
+        : { username, email, "password": hashedPwd, roles }
 
     // Create and store new user
     const user = await User.create(userObject)
@@ -56,10 +56,10 @@ const createNewUser = async (req, res) => {
 // @route PATCH /users
 // @access Private
 const updateUser = async (req, res) => {
-    const { id, username, roles, active, password } = req.body
+    const { id, username, email, roles, active, password } = req.body
 
     // Confirm data
-    if (!id || !username || !Array.isArray(roles) || !roles.length || typeof active !== 'boolean') {
+    if (!id || !username || !email || !Array.isArray(roles) || !roles.length || typeof active !== 'boolean') {
         return res.status(400).json({ message: 'All fields except password are required' })
     }
 
@@ -79,6 +79,7 @@ const updateUser = async (req, res) => {
     }
 
     user.username = username
+    user.email = email
     user.roles = roles
     user.active = active
 
