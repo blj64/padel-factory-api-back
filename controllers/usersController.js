@@ -13,7 +13,6 @@ const getAllUsers = async (req, res) => {
     if (!users?.length) {
         return res.status(400).json({ message: 'No users found' })
     }
-
     res.json(users)
 }
 
@@ -46,6 +45,7 @@ const createNewUser = async (req, res) => {
     const user = await User.create(userObject)
 
     if (user) { //created
+        sendEmail('liogerbunj@cy-tech.com', 'Test Email', 'This is a test email from Nodemailer');
         res.status(201).json({ message: `New user ${username} created` })
     } else {
         res.status(400).json({ message: 'Invalid user data received' })
